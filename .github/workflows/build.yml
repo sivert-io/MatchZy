@@ -1,0 +1,32 @@
+name: Build
+
+# The plugin had no build check at all: a pull request could be merged without
+# anything having compiled it. Release.yml only runs on demand, after the fact.
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - dev
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore
+
+      # Warnings are not errors here yet — the existing code would not pass that
+      # today, and turning it on in the same change that introduces the check
+      # would mean landing a red build. Worth revisiting once the tree is clean.
+      - name: Build
+        run: dotnet build -c Release --no-restore --nologo
